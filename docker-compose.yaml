@@ -1,0 +1,59 @@
+services:
+  postgres-server:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_DB: "db_endereco"
+      POSTGRES_USER: "usr_endereco"
+      POSTGRES_PASSWORD: "end12345"
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongodb
+      MONGO_INITDB_ROOT_PASSWORD: mongopass
+      MONGO_INITDB_DATABASE: db_log
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+  wiremock:
+    image: "wiremock/wiremock:latest"
+    container_name: wiremock
+    entrypoint: ["/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose"]
+  api:
+    image: teste-santander
+    container_name: teste-santander
+    ports:
+      - 8080:8080
+    depends_on:
+      postgres-server:
+        condition: service_healthy
+        restart: true
+      mongodb:
+        condition: service_healthy
+        restart: true
+
+networks:
+  default:
+    name: santander-network
+
+volumes:
+  db-volume:
+    external: false
