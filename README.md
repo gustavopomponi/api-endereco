@@ -35,7 +35,7 @@ Entre no diretório do projeto
 Faça o build da imagem de container da aplicação
 
 ```bash
-  docker build -t  teste-santander .
+  docker build -t  api-endereco .
 ```
 
 Inicie a stack da aplicação

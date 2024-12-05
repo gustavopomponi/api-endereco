@@ -38,10 +38,13 @@ services:
     container_name: wiremock
     entrypoint: ["/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose"]
   api:
-    image: teste-santander
-    container_name: teste-santander
+    image: api-endereco
+    container_name: api-endereco
     ports:
       - 8080:8080
+    environment:
+      MONGO_HOST: mongodb
+      POSTGRES_HOST: postgres-server
     depends_on:
       postgres-server:
         condition: service_healthy
@@ -52,7 +55,7 @@ services:
 
 networks:
   default:
-    name: santander-network
+    name: endereco-network
 
 volumes:
   db-volume:
